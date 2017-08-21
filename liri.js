@@ -1,19 +1,33 @@
-var Twitter = require('twitter');
-var Spotify = require('node-spotify-api');
-var OMDB = require('request');
 var keys = require("./keys.js");
+var t_witter = require('twitter');
+var Twitter = new t_witter(keys.twitterKeys);
+var s_potify = require('node-spotify-api');
+var Spotify = new s_potify (keys.spotifyKeys);
+var OMDB = require('request');
 var fs = require("fs");
+var title = process.argv[3];
 
-var command = process.argv[2];
-var requestname = process.argv[3];
-
-console.log(command)
+function showTweets(){
+  var screenName = {screen_name: 'unknownartistic'};
+  Twitter.get('statuses/user_timeline', screenName, function(error, tweets, response){
+    if(!error){
+      for(var i = 0; i<tweets.length; i++){
+        var date = tweets[i].created_at;
+        console.log("@unknownartistic: " + tweets[i].text + " Created At: " + date.substring(0, 19));
+        console.log("-----------------------");
+       
+      }
+    }else{
+      console.log('Error occurred');
+    }
+  });
+}
 
 
 function spotifyHelper(err, data){
   if(err){
-    console.log("Spotify error");
-    log("spotify error");
+    console.log("Spotify is dead");
+    console.log("Spotify is dead");
   }
   else{
     var output = ""
@@ -28,24 +42,23 @@ function spotifyHelper(err, data){
       output += data.tracks.items[0].preview_url;
     }
     else {
-      output += "No preview found.";
+      output += "No preview found... Sorry.";
     }
     console.log(output);
-    log(output + "\n");
+    console.log(output + "\n");
   }
 }
 
 function useSpotify(name){
-  var spotify = new Spotify(keys.spotifyKeys);
   if(name !== undefined){
-    spotify.search({
+    Spotify.search({
       type: "track",
       query: name,
       limit: 1
     }, spotifyHelper);
   }
   else{
-    spotify.search({
+    Spotify.search({
       type: "track",
       query: "The Sign",
       limit: 1
@@ -60,7 +73,7 @@ function movieHelper(err, response, body){
     output += "Title: " + body.Title;
     output += "\nYear: " + body.Year;
     for(var rater of body.Ratings){
-      if(rater.Source === "IMDB"){
+      if(rater.Source === "Internet Movie Database"){
         output += "\nIMDB Rating: " + rater.Value;
       }
       else if(rater.Source === "Rotten Tomatoes"){
@@ -72,23 +85,55 @@ function movieHelper(err, response, body){
     output += "\nActors: " + body.Actors;
     output += "\nPlot: " + body.Plot;
     console.log(output);
-    log(output + "\n");
   }
   else{
-    console.log("OMDB error.");
-    log("OMDB error.\n");
+    console.log("OMDB error");
+    log("OMDB error\n");
   }
 }
 
 function getAMovie(title){
   if(title !== undefined){
     var query = "http://www.omdbapi.com/?apikey=40e9cece&t=" + title;
-    request(query, movieHelper);
+    OMDB(query, movieHelper);
   }
   else{
     request("http://www.omdbapi.com/?apikey=40e9cece&t=Mr.Nobody", movieHelper);
   }
 }
 
+function doStuff(){
+  fs.readFile("./random.txt", "utf8",function(error, data){
+    if(error){
+      console.log("An error occurred. Does random.txt exist?");
+      console.log("\nAn error occurred. Does random.txt exist?\n");
+      process.exit(-1);
+    }
+    else{
+      data = data.split(" ");
+      main(data[0], data[1], data[2]);
+    }
+  });
+}
+
+function main(command, parameter = process.argv[3], parameter2 = process.argv[4]){
+  switch(command){
+    case("spotify-this"):
+      console.log(command + " " + parameter);
+      useSpotify(parameter);
+      break;
+    case("movie-this"):
+      console.log(command + " " + parameter);
+      getAMovie(parameter);
+      break;
+    case("do-what-it-says"):
+      console.log(command);
+      doStuff()
+      case("my-tweets"):
+      console.log(command);
+      showTweets()
+      break
+  }
+}
 //This is where the code starts
 main(process.argv[2]);
