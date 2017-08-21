@@ -13,7 +13,7 @@ function showTweets(){
     if(!error){
       for(var i = 0; i<tweets.length; i++){
         var date = tweets[i].created_at;
-        console.log("@unknownartistic: " + tweets[i].text + " Created At: " + date.substring(0, 19));
+        console.log("@unknownartistic: " + tweets[i].text + " Created On: " + date.substring(0, 19));
         console.log("-----------------------");
        
       }
@@ -26,8 +26,8 @@ function showTweets(){
 
 function spotifyHelper(err, data){
   if(err){
-    console.log("Spotify is dead");
-    console.log("Spotify is dead");
+    console.log("Spotify Error");
+    console.log("Spotify Error");
   }
   else{
     var output = ""
@@ -42,7 +42,7 @@ function spotifyHelper(err, data){
       output += data.tracks.items[0].preview_url;
     }
     else {
-      output += "No preview found... Sorry.";
+      output += "Nothing Find";
     }
     console.log(output);
     console.log(output + "\n");
